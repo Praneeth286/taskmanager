@@ -1,8 +1,5 @@
 package com.praneeth.taskmanager;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 @Entity
 public class Task {
@@ -30,5 +27,10 @@ public class Task {
     public void setId(Long id) {this. id = id;}
     public void setTitle(String title) {this.title = title;}
     public void setDone(Boolean isDone) {this.isDone = isDone;}
+    @ManyToOne
+    @JoinColumn(name="category_id")
+    private Category category;
+    public Category getCategory(){return category;}
+    public void setCategory(Category category){this.category = category;}
 }
 //This is a test comment for Git practice

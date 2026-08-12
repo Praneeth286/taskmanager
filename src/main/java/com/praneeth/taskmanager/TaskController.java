@@ -5,32 +5,27 @@ import org.springframework.web.bind.annotation.* ;
 import java.util.List;
 @RestController
 public class TaskController {
-    private final TaskRepository taskRepository;
-    public TaskController(TaskRepository taskRepository){
-        this.taskRepository = taskRepository;
+    private final TaskService taskService;
+    public TaskController(TaskService taskService){
+        this.taskService = taskService;
     }
     @GetMapping("/tasks")
-    public List <Task> getTasks() {
-         return taskRepository.findAll();
-  }
-    @PostMapping ("/tasks")
- public Task createTask(@Valid @RequestBody Task newTask){
-    Task task = new Task(null, newTask.getTitle(),false);
-    return taskRepository.save(task);
+    public List <TaskResponse> getTasks(@RequestParam(required=false)Boolean done) {
+        if (done == null) {
+            return taskService.getAllTasks();
+        }
+        return taskService.getTasksByStatus(done);
     }
-    @PutMapping("/tasks/{id}")
-    public Task updateTask(@PathVariable Long id, @RequestBody Task updatedTask){
-    Task task = taskRepository.findById(id)
-            .orElseThrow(()-> new TaskNotFoundException(id));
-    task.setTitle(updatedTask.getTitle());
-    task.setDone(updatedTask .isDone());
-      return taskRepository.save(task);
+    @PostMapping ("/tasks")
+ public TaskResponse createTask(@Valid @RequestBody Task newTask){
+        return taskService.createTask(newTask.getTitle());
+    }
+    @PutMapping("/tasks/{taskId}/category/{categoryId}")
+    public TaskResponse assignCategory(@PathVariable Long taskId, @PathVariable Long categoryId) {
+        return taskService.assignCategory(taskId, categoryId);
     }
     @DeleteMapping("/tasks/{id}")
     public void deleteTask(@PathVariable Long id) {
-        taskRepository.deleteById(id);
+      taskService.deleteTask(id);
     }
-
-
-
 }
