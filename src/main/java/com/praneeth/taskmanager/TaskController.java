@@ -11,7 +11,7 @@ public class TaskController {
     }
     @GetMapping("/tasks")
     public List <TaskResponse> getTasks(@RequestParam(required=false)Boolean done) {
-        if (done == null) {
+        if (done == null){
             return taskService.getAllTasks();
         }
         return taskService.getTasksByStatus(done);
