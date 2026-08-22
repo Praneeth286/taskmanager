@@ -31,6 +31,6 @@ public class AuthController {
             throw new RuntimeException("Invalid username or password");
         }
 
-        return jwtUtil.generateToken(user.getUsername());
+        return jwtUtil.generateToken(user.getUsername(), user .getRole());
     }
 }

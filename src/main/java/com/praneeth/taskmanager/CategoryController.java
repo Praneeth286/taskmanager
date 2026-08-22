@@ -1,6 +1,7 @@
 package com.praneeth.taskmanager;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import org.springframework.security.access.prepost.PreAuthorize;
 @RestController
 public class CategoryController {
     private final CategoryService categoryService;
@@ -12,6 +13,7 @@ public class CategoryController {
         return categoryService.getAllCategories();
     }
     @PostMapping("/categories")
+    @PreAuthorize("hasRole('ADMIN')")
     public Category createCategory(@RequestBody Category category){
         return categoryService.createCategory(category.getName());
     }
