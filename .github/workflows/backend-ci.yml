@@ -10,6 +10,21 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: testuser
+          POSTGRES_PASSWORD: testpass
+          POSTGRES_DB: taskmanager_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -21,4 +36,10 @@ jobs:
           distribution: 'temurin'
 
       - name: Run tests
+        env:
+          DATABASE_URL: jdbc:postgresql://localhost:5432/taskmanager_test
+          DATABASE_USERNAME: testuser
+          DATABASE_PASSWORD: testpass
+          JWT_SECRET: test-secret-for-ci-pipeline-only-not-a-real-secret-value-1234567890
+          FRONTEND_URL: http://localhost:5173
         run: mvn test
