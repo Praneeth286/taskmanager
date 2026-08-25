@@ -1,0 +1,28 @@
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: taskmanager
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  backend:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      DATABASE_URL: jdbc:postgresql://postgres:5432/taskmanager
+      DATABASE_USERNAME: postgres
+      DATABASE_PASSWORD: postgres
+      JWT_SECRET: d28b8afb569de33f132ac8a6a2baea74b1515f0b25dec85ac330df028aa981cc032229995ab64dc464bae8e5686132c3e23e4e6ac248b626887048df371aec93
+      FRONTEND_URL: http://localhost:5173
+    depends_on:
+      - postgres
+
+volumes:
+  postgres_data:
