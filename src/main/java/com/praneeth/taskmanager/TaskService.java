@@ -43,15 +43,30 @@ public class TaskService {
     }
 
     public TaskResponse updateTask(Long id, String title, Boolean isDone) {
+        String username = getCurrentUsername();
         Task task = taskRepository.findById(id)
                 .orElseThrow(() -> {
                     log.warn("Attempted to update non-existent task with id {}", id);
                     return new TaskNotFoundException(id);
                 });
+        if (task.getOwner() == null || !task.getOwner().getUsername().equals(username)) {
+            throw new RuntimeException("You do not have permission to update this task");
+        }
         task.setTitle(title);
         task.setDone(isDone);
         Task saved = taskRepository.save(task);
         return TaskResponse.fromEntity(saved);
+    }
+
+    public void deleteTask(Long id) {
+        String username = getCurrentUsername();
+        Task task = taskRepository.findById(id)
+                .orElseThrow(() -> new TaskNotFoundException(id));
+        if (task.getOwner() == null || !task.getOwner().getUsername().equals(username)) {
+            throw new RuntimeException("You do not have permission to delete this task");
+        }
+        log.info("Deleting task with id {}", id);
+        taskRepository.deleteById(id);
     }
 
     public List<TaskResponse> getTasksByStatus(Boolean isDone) {
@@ -59,11 +74,6 @@ public class TaskService {
                 .filter(task -> task.isDone().equals(isDone))
                 .map(TaskResponse::fromEntity)
                 .collect(Collectors.toList());
-    }
-
-    public void deleteTask(Long id) {
-        log.info("Deleting task with id {}", id);
-        taskRepository.deleteById(id);
     }
 
     public TaskResponse assignCategory(Long taskId, Long categoryId) {
