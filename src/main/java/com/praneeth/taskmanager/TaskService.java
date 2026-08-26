@@ -2,6 +2,7 @@ package com.praneeth.taskmanager;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -13,22 +14,31 @@ public class TaskService {
 
     private final TaskRepository taskRepository;
     private final CategoryRepository categoryRepository;
+    private final UserRepository userRepository;
 
-    public TaskService(TaskRepository taskRepository, CategoryRepository categoryRepository) {
+    public TaskService(TaskRepository taskRepository, CategoryRepository categoryRepository, UserRepository userRepository) {
         this.taskRepository = taskRepository;
         this.categoryRepository = categoryRepository;
+        this.userRepository = userRepository;
     }
 
     public List<TaskResponse> getAllTasks() {
+        String username = getCurrentUsername();
         return taskRepository.findAll().stream()
+                .filter(task -> task.getOwner() != null && task.getOwner().getUsername().equals(username))
                 .map(TaskResponse::fromEntity)
                 .collect(Collectors.toList());
     }
 
     public TaskResponse createTask(String title) {
+        String username = getCurrentUsername();
+        User owner = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
         Task task = new Task(null, title, false);
+        task.setOwner(owner);
         Task saved = taskRepository.save(task);
-        log.info("Task created with id {}", saved.getId());
+        log.info("Task created with id {} for user {}", saved.getId(), username);
         return TaskResponse.fromEntity(saved);
     }
 
@@ -64,5 +74,9 @@ public class TaskService {
         task.setCategory(category);
         Task saved = taskRepository.save(task);
         return TaskResponse.fromEntity(saved);
+    }
+
+    private String getCurrentUsername() {
+        return SecurityContextHolder.getContext().getAuthentication().getName();
     }
 }

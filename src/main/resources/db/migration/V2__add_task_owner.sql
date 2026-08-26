@@ -1,0 +1,1 @@
+ALTER TABLE task ADD COLUMN user_id BIGINT REFERENCES app_user(id);
